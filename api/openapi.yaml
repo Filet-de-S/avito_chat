@@ -1,0 +1,295 @@
+openapi: 3.0.0
+info:
+  title: Chat API
+  description: basic chat API for avito test project
+  version: 1.0.0
+servers:
+- url: http://localhost:9000
+tags:
+- name: users
+- name: chats
+- name: messages
+paths:
+  /users/add:
+    post:
+      tags:
+      - users
+      summary: Create a user by name and get ID
+      description: Username must be unique
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body'
+        required: true
+      responses:
+        "201":
+          description: User created. ID returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_201'
+          links:
+            createChat:
+              $ref: '#/components/links/createChat'
+            getChats:
+              $ref: '#/components/links/getChats'
+            sendMSG:
+              $ref: '#/components/links/sendMSG'
+        "409":
+          description: Username is already taken
+  /chats/add:
+    post:
+      tags:
+      - chats
+      summary: Create a chat by name with usersID and get chatID
+      description: Name must be unique
+      operationId: createChat
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/add_chat'
+        required: true
+      responses:
+        "201":
+          description: Chat created. ID returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_201_1'
+          links:
+            sendMSG:
+              $ref: '#/components/links/sendMSG'
+            getMSGs:
+              $ref: '#/components/links/getMSGs'
+        "404":
+          description: At least one user doesn't exist
+        "409":
+          description: Chat name is already taken
+  /chats/get:
+    post:
+      tags:
+      - chats
+      summary: Using userID get chats sorted by last msg first
+      operationId: getChats
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body_1'
+        required: true
+      responses:
+        "200":
+          description: Chats returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/chats'
+        "204":
+          description: No chats
+        "404":
+          description: User doesn't exist
+  /messages/add:
+    post:
+      tags:
+      - messages
+      summary: Send a msg and get its ID
+      operationId: sendMSG
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/msg'
+        required: true
+      responses:
+        "201":
+          description: MSG send. ID returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_201_2'
+        "404":
+          description: Either user or chat doesn't exists
+  /messages/get:
+    post:
+      tags:
+      - messages
+      summary: Using chatID get msgs sorted by earliest first
+      operationId: getMSGs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body_2'
+        required: true
+      responses:
+        "200":
+          description: MSGs returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MSGs'
+        "204":
+          description: No msgs
+        "404":
+          description: Chat doesn't exists
+components:
+  schemas:
+    add_chat:
+      required:
+      - name
+      - users
+      type: object
+      properties:
+        name:
+          type: string
+        users:
+          minItems: 2
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+            format: uuid
+    chats:
+      type: array
+      items:
+        $ref: '#/components/schemas/chats_inner'
+    msg:
+      required:
+      - author
+      - chat
+      - text
+      type: object
+      properties:
+        chat:
+          type: string
+          format: uuid
+        author:
+          type: string
+          format: uuid
+        text:
+          minLength: 1
+          type: string
+    MSGs:
+      type: array
+      items:
+        $ref: '#/components/schemas/MSGs_inner'
+    errors:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/errors_errors'
+      example:
+        errors:
+        - status: 400
+          title: Invalid JSON Syntax
+          detail: 'Check byte: 5'
+    body:
+      required:
+      - username
+      type: object
+      properties:
+        username:
+          type: string
+    inline_response_201:
+      type: object
+      properties:
+        id:
+          type: string
+          description: unique ID of created user
+          format: uuid
+    inline_response_201_1:
+      type: object
+      properties:
+        id:
+          type: string
+          description: unique ID of created chat
+          format: uuid
+    body_1:
+      required:
+      - user
+      type: object
+      properties:
+        user:
+          type: string
+          format: uuid
+    inline_response_201_2:
+      type: object
+      properties:
+        id:
+          type: string
+          description: unique ID of msg
+          format: uuid
+    body_2:
+      properties:
+        chat:
+          type: string
+          format: uuid
+    chats_inner:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        users:
+          type: array
+          items:
+            type: string
+            format: uuid
+        created_at:
+          type: string
+          format: date-time
+    MSGs_inner:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        author:
+          type: string
+          format: uuid
+        text:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    errors_errors:
+      type: object
+      properties:
+        status:
+          type: integer
+        title:
+          type: string
+        detail:
+          type: string
+  links:
+    getChats:
+      operationId: getChats
+      parameters:
+        user: $paths/users/add/response.body#/id
+      description: |
+        The `id` value returned in the response can be used as the `user` value in `POST /chats/get`
+    sendMSG:
+      operationId: sendMSG
+      parameters:
+        author: $paths/users/add/response.body#/id
+        chat: $paths/chats/add/response.body#/id
+      description: |
+        The `id` values returned from `POST users/add` and  `POST chats/add` can be used as `author` and `chat` in `POST /messages/add`
+    getMSGs:
+      operationId: getMSGs
+      parameters:
+        chat: $paths/chats/add/response.body#/id
+      description: |
+        The `id` value returned in the response can be used as `chat` in `POST /messages/get`
+    createChat:
+      operationId: createChat
+      parameters:
+        user_id: $paths/users/add/response.body#/id
+      description: |
+        The `id` value returned in the response can be used as the `userID` value in `POST /chats/add`

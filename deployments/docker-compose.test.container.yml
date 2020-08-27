@@ -1,0 +1,32 @@
+version: "3.8"
+services:
+
+  test:
+    build:
+      context: ..
+      dockerfile: build/Dockerfile.test.newman
+    depends_on:
+      - chat-api
+      - pwmanager
+      - pg
+    environment:
+      SERVICE_NAME: CHAT
+      SERVICE_HOST: chat-api
+      SERVICE_PORT: 8080
+      URL_PATH: status
+      PGPASSFILE: /run/secrets/$PGPASSFILE
+      SCRIPTS_FOLDER: /scripts
+      POSTMAN_FOLDER: /postman
+      PG_SNAME: pg
+    secrets:
+      - source: pgpass
+        target: $PGPASSFILE
+    container_name: chat-api-test
+
+  chat-api:
+  pwmanager:
+  pg:
+
+secrets:
+  pgpass:
+    file: ../secrets/$PGPASSFILE

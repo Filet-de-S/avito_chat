@@ -1,0 +1,9 @@
+version: "3.8"
+services:
+
+  chat-api:
+  pg:
+    volumes:
+      - $MOCK_DB:/var/lib/postgresql/data
+  pwmanager:
+

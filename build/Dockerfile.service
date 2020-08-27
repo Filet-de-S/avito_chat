@@ -1,0 +1,20 @@
+FROM golang:alpine
+
+RUN apk add --no-cache gcc musl-dev
+
+WORKDIR /service
+COPY cmd cmd
+COPY go.mod .
+COPY go.sum .
+
+RUN go mod download
+
+ARG GO_BUILD_EXTRA_FLAGS
+ARG CGO_ENABLED
+
+COPY internal internal
+
+RUN echo "building .service with flags:"; echo "extra = $GO_BUILD_EXTRA_FLAGS"; echo "cgo_enabled = $CGO_ENABLED"
+RUN go build $GO_BUILD_EXTRA_FLAGS cmd/main.go
+
+ENTRYPOINT ./main

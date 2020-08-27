@@ -1,0 +1,42 @@
+dist: trusty
+
+services:
+  - docker
+
+language: node_js
+node_js:
+- "node"
+
+addons:
+  apt:
+    packages:
+      - docker-ce
+      - npm
+
+env:
+  - DOCKER_COMPOSE_VERSION=1.26.2
+
+before_install:
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+
+install:
+  - npm install -g newman
+  - npm install -g newman newman-reporter-html
+  - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
+        | sudo sh -s -- -b /usr/local/bin v1.30.0
+
+before_script:
+  - sudo /etc/init.d/postgresql stop
+
+jobs:
+  include:
+    - stage: test
+      language: go
+      go: "1.15"
+      script: make lint
+    - script: make test-local-run
+    - stage: prod-build
+      script: make prod-build

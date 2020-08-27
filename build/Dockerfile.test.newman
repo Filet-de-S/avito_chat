@@ -1,0 +1,12 @@
+FROM node:alpine
+
+RUN apk --no-cache add curl
+RUN apk --no-cache add postgresql-client
+RUN npm install -g newman
+RUN npm install -g newman-reporter-html
+
+WORKDIR scripts
+COPY scripts .
+COPY test/postman /postman/
+
+CMD ["/bin/sh", "-c", "/scripts/test.sh"]

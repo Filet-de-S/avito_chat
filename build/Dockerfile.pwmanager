@@ -1,0 +1,8 @@
+FROM golang:alpine
+
+WORKDIR /service
+COPY tools/pwmanager .
+
+RUN go build main.go
+
+ENTRYPOINT ./main

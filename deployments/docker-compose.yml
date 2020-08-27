@@ -1,0 +1,75 @@
+version: "3.8"
+services:
+
+  chat-api:
+    build:
+      context: ..
+      dockerfile: build/Dockerfile.service
+      args:
+        CGO_ENABLED: $CGO_ENABLED
+    depends_on:
+      - pg
+      - pwmanager
+    ports:
+      - 9000:8080
+    restart: always
+    env_file:
+      - service.env
+      - files.env
+    environment:
+      TZ: "Europe/Moscow"
+      SERVICE_MODE: "debug"
+      PW_MNG_HOST: "pwmanager"
+      PW_MNG_PORT: "1337"
+    secrets:
+      - source: pwmng
+        target: $PW_MNG_FILE
+
+  pwmanager:
+    build:
+      context: ..
+      dockerfile: build/Dockerfile.pwmanager
+    depends_on:
+      - pg
+    restart: always
+    env_file:
+      - service.env
+      - files.env
+    environment:
+      MAIN_SERVICE: "chat-api:8080"
+      FILES: $PGPASSFILE:$UUIDS_FILE
+      TZ: "Europe/Moscow"
+    secrets:
+      - source: pgpass
+        target: $PGPASSFILE
+      - source: uuids
+        target: $UUIDS_FILE
+      - source: pwmng
+        target: $PW_MNG_FILE
+
+  pg:
+    image: postgres:12.4-alpine
+    restart: always
+    environment:
+      TZ: "Europe/Moscow"
+      POSTGRES_PASSWORD_FILE: /run/secrets/$POSTGRES_PASSWORD_FILE
+    secrets:
+      - source: pgpassf
+        target: $POSTGRES_PASSWORD_FILE
+    volumes:
+    - ../migrations:/docker-entrypoint-initdb.d
+    - ../secrets/migrations/002_create-role_client.up.sql:/docker-entrypoint-initdb.d/002_create-role_client.up.sql
+
+secrets:
+  pgpassf:
+    file: ../secrets/$POSTGRES_PASSWORD_FILE
+  pgpass:
+    file: ../secrets/$PGPASSFILE
+  uuids:
+    file: ../secrets/$UUIDS_FILE
+  pwmng:
+    file: ../secrets/$PW_MNG_FILE
+
+volumes:
+  prod-db:
+  mock-db:

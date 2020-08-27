@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  chat-api:
+    build:
+      args:
+        GO_BUILD_EXTRA_FLAGS: " -race "
+        CGO_ENABLED: 1
+    environment:
+      SERVICE_MODE: "test"
+
+  pg:
+    volumes:
+      - $MOCK_DB:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+  pwmanager:
