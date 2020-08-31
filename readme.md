@@ -1,4 +1,6 @@
 # Chat service
+[![Build Status](https://travis-ci.org/Filet-de-S/avito_chat.svg?branch=master)](https://travis-ci.org/Filet-de-S/avito_chat)
+
 **О проекте:**
     чат-сервис, предоставляющий HTTP API для работы с чатами и сообщениями пользователя.
     
