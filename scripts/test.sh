@@ -2,7 +2,7 @@
 
 set -e
 
-printf "waiting for up:\n"
+printf "Waiting for API up:\n"
 
 printf "\n Running entrypoint.sh \n"
 sh $SCRIPTS_FOLDER/entrypoint.sh
@@ -18,5 +18,4 @@ newman run $POSTMAN_FOLDER/i_test.postman_collection.json --folder scenario \
         --reporter-html-template $POSTMAN_FOLDER/template.hbs \
         --bail \
         --global-var baseUrl=$SERVICE_HOST:$SERVICE_PORT
-
 printf "\n Passed Newman Tests \n"

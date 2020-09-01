@@ -2,8 +2,7 @@ version: "3.8"
 services:
 
   chat-api:
+    environment:
+      SERVICE_MODE: "debug"
   pg:
-    volumes:
-      - $MOCK_DB:/var/lib/postgresql/data
   pwmanager:
-

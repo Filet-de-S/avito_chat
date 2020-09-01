@@ -10,6 +10,7 @@ services:
       - pwmanager
       - pg
     environment:
+      TZ: $TZ
       SERVICE_NAME: CHAT
       SERVICE_HOST: chat-api
       SERVICE_PORT: 8080
@@ -21,7 +22,7 @@ services:
     secrets:
       - source: pgpass
         target: $PGPASSFILE
-    container_name: chat-api-test
+    container_name: test-contr_api-tests
 
   chat-api:
   pwmanager:

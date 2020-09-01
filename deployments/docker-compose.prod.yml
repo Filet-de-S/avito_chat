@@ -5,6 +5,4 @@ services:
     environment:
       SERVICE_MODE: "release"
   pg:
-    volumes:
-      - $PROD_DB:/var/lib/postgresql/data
   pwmanager:

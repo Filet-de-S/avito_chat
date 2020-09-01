@@ -9,8 +9,6 @@ services:
       SERVICE_MODE: "test"
 
   pg:
-    volumes:
-      - $MOCK_DB:/var/lib/postgresql/data
     ports:
       - 5432:5432
   pwmanager:

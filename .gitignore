@@ -1,4 +1,6 @@
 .idea/
 *.DS_Store
 test/postman/report.html
+migrations/002_create-role_client.up.sql
+
 #.secrets/

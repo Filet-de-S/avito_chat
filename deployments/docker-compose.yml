@@ -17,10 +17,9 @@ services:
       - service.env
       - files.env
     environment:
-      TZ: "Europe/Moscow"
-      SERVICE_MODE: "debug"
       PW_MNG_HOST: "pwmanager"
       PW_MNG_PORT: "1337"
+      TZ: $TZ
     secrets:
       - source: pwmng
         target: $PW_MNG_FILE
@@ -38,7 +37,7 @@ services:
     environment:
       MAIN_SERVICE: "chat-api:8080"
       FILES: $PGPASSFILE:$UUIDS_FILE
-      TZ: "Europe/Moscow"
+      TZ: $TZ
     secrets:
       - source: pgpass
         target: $PGPASSFILE
@@ -51,14 +50,15 @@ services:
     image: postgres:12.4-alpine
     restart: always
     environment:
-      TZ: "Europe/Moscow"
       POSTGRES_PASSWORD_FILE: /run/secrets/$POSTGRES_PASSWORD_FILE
+      TZ: $TZ
     secrets:
       - source: pgpassf
         target: $POSTGRES_PASSWORD_FILE
     volumes:
-    - ../migrations:/docker-entrypoint-initdb.d
-    - ../secrets/migrations/002_create-role_client.up.sql:/docker-entrypoint-initdb.d/002_create-role_client.up.sql
+      - data:/var/lib/postgresql/data
+      - ../migrations:/docker-entrypoint-initdb.d
+      - ../secrets/migrations/002_create-role_client.up.sql:/docker-entrypoint-initdb.d/002_create-role_client.up.sql
 
 secrets:
   pgpassf:
@@ -71,5 +71,4 @@ secrets:
     file: ../secrets/$PW_MNG_FILE
 
 volumes:
-  prod-db:
-  mock-db:
+  data:
