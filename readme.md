@@ -1,10 +1,9 @@
-# Chat service
+# Chat API
 [![Build Status](https://travis-ci.org/Filet-de-S/avito_chat.svg?branch=master)](https://travis-ci.org/Filet-de-S/avito_chat)
 
-**О проекте:**
-    чат-сервис, предоставляющий HTTP API для работы с чатами и сообщениями пользователя.
+*Cервис – HTTP API для работы с чатами и сообщениями пользователя*
     
-*Проект – [тестовое задание](https://github.com/Filet-de-S/avito_chat/blob/master/task.md) на позицию стажёра-бэкенд разработчика в **start.avito.unit.Messenger***
+*Проект – [тестовое задание](https://github.com/Filet-de-S/avito_chat/blob/master/task.md) на позицию стажёра бэкенд-разработчика в **start.avito.unit.Messenger***
 
 ## Запуск сервиса
 ```bash
@@ -17,8 +16,9 @@ ___
 * Написаны интеграционные тесты, результат генерируется в `test/postman/result.html`
 
     * Для запуска в контейнере: `make test-run`
-    * На локальной OS: `make test-local-run`. 
-    Тестовый скрипт использует `postgresql-client, curl, newman, newman-reporter-html`. Позаботьтесь об их наличии  
+    * На локальной OS: `make test-local-run`
+
+        Тестовый скрипт использует `postgresql-client, curl, newman, newman-reporter-html`, позаботьтесь об их установке
 
 
 ___
