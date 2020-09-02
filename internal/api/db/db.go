@@ -15,8 +15,8 @@ type Service interface {
 	SaveUser(context.Context, users.User) error
 	SaveChat(context.Context, chats.Chat) error
 	SaveMSG(context.Context, messages.MSG) error
-	GetChats(ctx context.Context, userID uuidgen.UUID) (UserChats, error)
-	GetMSGs(ctx context.Context, chatID uuidgen.UUID) (Messages, error)
+	GetChatsByUserID(ctx context.Context, userID uuidgen.UUID) (UserChats, error)
+	GetMSGsByChatID(ctx context.Context, chatID uuidgen.UUID) (Messages, error)
 }
 
 // UserChats ...

@@ -2,9 +2,10 @@
 
 BEGIN;
 
--- get_chats_without_users(user_ID)
-CREATE FUNCTION get_chats_without_users(user_id_ TEXT)
-    RETURNS TABLE (_id TEXT, _name TEXT, m_created_at TIMESTAMPTZ) AS
+
+-- get_chats(user_ID)
+CREATE FUNCTION get_chats(user_id_ TEXT)
+    RETURNS TABLE (_id TEXT, _name TEXT, m_created_at TIMESTAMPTZ, users TEXT ARRAY) AS
 $BODY$
 BEGIN
     IF NOT EXISTS(SELECT id FROM users WHERE id = $1) THEN
@@ -12,7 +13,8 @@ BEGIN
     END IF;
 
 RETURN QUERY
-    SELECT chat.id, chat.name, chat.created_at
+    SELECT chat.id, chat.name, chat.created_at,
+           ARRAY (SELECT user_id FROM chat_users WHERE chat_id = chat.id)
     FROM chat
     JOIN chat_users
         ON chat.id = chat_users.chat_id
@@ -22,24 +24,6 @@ RETURN QUERY
     GROUP BY chat.id
     ORDER BY COALESCE(max(msg.created_at), to_timestamp(0)) DESC,
              chat.created_at DESC;
-END
-$BODY$
-    LANGUAGE plpgsql;
-
-
--- get_users_from_chat(chatID)
-CREATE FUNCTION get_users_from_chat(chat_id_ TEXT)
-    RETURNS TABLE (user_id_ TEXT) AS
-$BODY$
-BEGIN
-    IF NOT EXISTS(SELECT id FROM chat WHERE id = $1) THEN
-        RAISE FOREIGN_KEY_VIOLATION USING CONSTRAINT = 'chat', DETAIL = $1;
-    END IF;
-
-RETURN QUERY
-    SELECT user_id
-    FROM chat_users
-    WHERE chat_id = $1;
 END
 $BODY$
     LANGUAGE plpgsql;
@@ -114,5 +98,51 @@ BEGIN
 END
 $BODY$
     LANGUAGE plpgsql;
+
+
+-- DEPRECATED due to new more efficient func: get_chats(user_id); if usecase needed, uncomment
+-- -- get_chats_without_users(user_ID)
+-- CREATE FUNCTION get_chats_without_users(user_id_ TEXT)
+--     RETURNS TABLE (_id TEXT, _name TEXT, m_created_at TIMESTAMPTZ) AS
+-- $BODY$
+-- BEGIN
+--     IF NOT EXISTS(SELECT id FROM users WHERE id = $1) THEN
+--         RAISE FOREIGN_KEY_VIOLATION USING CONSTRAINT = 'user', DETAIL = $1;
+--     END IF;
+--
+--     RETURN QUERY
+--         SELECT chat.id, chat.name, chat.created_at
+--         FROM chat
+--                  JOIN chat_users
+--                       ON chat.id = chat_users.chat_id
+--                  LEFT JOIN msg
+--                            ON chat.id = msg.chat_id
+--         WHERE chat_users.user_id = $1
+--         GROUP BY chat.id
+--         ORDER BY COALESCE(max(msg.created_at), to_timestamp(0)) DESC,
+--                  chat.created_at DESC;
+-- END
+-- $BODY$
+--     LANGUAGE plpgsql;
+--
+--
+-- DEPRECATED due to new more efficient func: get_chats(user_id); if usecase needed, uncomment
+-- -- get_users_from_chat(chatID)
+-- CREATE FUNCTION get_users_from_chat(chat_id_ TEXT)
+--     RETURNS TABLE (user_id_ TEXT) AS
+-- $BODY$
+-- BEGIN
+--     IF NOT EXISTS(SELECT id FROM chat WHERE id = $1) THEN
+--         RAISE FOREIGN_KEY_VIOLATION USING CONSTRAINT = 'chat', DETAIL = $1;
+--     END IF;
+--
+--     RETURN QUERY
+--         SELECT user_id
+--         FROM chat_users
+--         WHERE chat_id = $1;
+-- END
+-- $BODY$
+--     LANGUAGE plpgsql;
+--
 
 COMMIT;

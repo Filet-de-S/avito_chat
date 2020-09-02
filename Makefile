@@ -39,6 +39,10 @@ test-run:
 	echo ${REPORT} ;\
 	exit $$EXIT_CODE
 
+# use, if you need db init, however tables are deleted in normal test-run
+test-clean:
+	${DOCKER_CMP_N} ${TEST_CNTR} ${CMP_BASE} -f ${CMP_TEST} -f ${CMP_TEST_CNTR} down --volume
+
 test-local-run:
 	@chmod 0600 secrets/.pgpassLocalhost
 	${DOCKER_CMP_N} ${TEST} ${CMP_BASE} -f ${CMP_TEST} up --build -d
@@ -48,6 +52,10 @@ test-local-run:
 	${DOCKER_CMP_N} ${TEST} ${CMP_BASE} -f ${CMP_TEST} stop ;\
 	echo ${REPORT} ;\
 	exit $$EXIT_CODE
+
+# use, if you need db init, however tables are deleted in normal test-local-run
+test-local-clean:
+	${DOCKER_CMP_N} ${TEST} ${CMP_BASE} -f ${CMP_TEST} down --volume
 
 prod: prod-build
 	${DOCKER_CMP_N} ${PROD} ${CMP_BASE} -f ${CMP_PROD} up

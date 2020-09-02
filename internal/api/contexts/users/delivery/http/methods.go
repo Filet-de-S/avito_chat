@@ -20,6 +20,7 @@ func (e *engine) add(ctx *gin.Context) {
 			contexts.ParseErr(err),
 		)
 		ctx.JSON(resp.Errors[0].Status, resp)
+
 		return
 	}
 
@@ -32,6 +33,7 @@ func (e *engine) add(ctx *gin.Context) {
 			[]error{err},
 		)
 		ctx.JSON(resp.Errors[0].Status, resp)
+
 		return
 	}
 

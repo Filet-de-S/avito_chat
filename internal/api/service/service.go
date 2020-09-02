@@ -28,6 +28,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgpassfile"
 	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 // Service ...
@@ -40,10 +41,11 @@ type config struct {
 	port    int
 	timeout time.Duration
 	// servAliveChR time.Duration
-	pgPassFile io.Reader
-	uuidUser   string
-	uuidChat   string
-	uuidMsg    string
+	pgPassFile     io.Reader
+	uuidUser       string
+	uuidChat       string
+	uuidMsg        string
+	pgPoolMaxConns int32
 }
 
 type _envs struct {
@@ -53,8 +55,9 @@ type _envs struct {
 	serviceMode    string
 	serviceTimeout string
 	// servAliveChR   string
-	pgPassFile string
-	uuidsFile  string
+	pgPassFile     string
+	pgPoolMaxConns string
+	uuidsFile      string
 }
 
 type memory struct {
@@ -136,6 +139,13 @@ func initConfig() error {
 		return errors.New("please set `SERVICE_TIMEOUT` in valid format: ms, just int")
 	}
 	cfg.timeout = time.Duration(stAtoi) * time.Millisecond
+
+	// PGPOOL_MAXCONNS
+	maxConns, err := strconv.Atoi(envs.pgPoolMaxConns)
+	if err != nil {
+		return errors.New("please set `PGPOOL_MAXCONNS` in valid format: just int")
+	}
+	cfg.pgPoolMaxConns = int32(maxConns)
 
 	//// SERVICE_ALIVE_CHECKRATE
 	//srvAl, err := strconv.Atoi(envs.servAliveChR)
@@ -331,11 +341,12 @@ func dbInit() (memory, error) {
 		return memory{}, err
 	}
 
-	var conn *pgx.Conn
+	var pool *pgxpool.Pool
 	timer := time.After(15 * time.Second)
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
 	i := 0
+
 CONNECT:
 	for {
 		if i == 0 || i%10 == 0 {
@@ -348,18 +359,16 @@ CONNECT:
 			log.Println("too long connect to db: ", err)
 			os.Exit(1)
 		case <-ticker.C:
-			conn, err = pgx.ConnectConfig(context.Background(), config)
+			pool, err = pgxpool.ConnectConfig(context.Background(), config)
 			if err == nil {
-				if err = conn.Ping(context.Background()); err == nil {
-					break CONNECT
-				}
+				break CONNECT
 			}
 		}
 	}
 
 	log.Println("Connection with db established")
 
-	store, err := psql.New(conn)
+	store, err := psql.New(pool)
 	if err != nil {
 		return memory{}, err
 	}
@@ -367,13 +376,13 @@ CONNECT:
 	return memory{dataStore: store}, nil
 }
 
-func getDBConfig() (*pgx.ConnConfig, error) {
+func getDBConfig() (*pgxpool.Config, error) {
 	pf, err := pgpassfile.ParsePassfile(cfg.pgPassFile)
 	if err != nil {
 		return nil, err
 	}
 
-	config, err := pgx.ParseConfig("")
+	connConfig, err := pgx.ParseConfig("")
 	if err != nil {
 		return nil, err
 	}
@@ -383,17 +392,26 @@ func getDBConfig() (*pgx.ConnConfig, error) {
 		return nil, err
 	}
 
-	config.RuntimeParams = map[string]string{
+	connConfig.RuntimeParams = map[string]string{
 		"standard_conforming_strings": "on",
 		"backslash_quote":             "off",
 	}
-	config.PreferSimpleProtocol = true
-	config.Port = uint16(port)
-	config.Host = pf.Entries[0].Hostname
-	config.Database = pf.Entries[0].Database
-	config.User = pf.Entries[0].Username
-	config.Password = pf.Entries[0].Password
-	return config, nil
+	connConfig.PreferSimpleProtocol = true
+	connConfig.Port = uint16(port)
+	connConfig.Host = pf.Entries[0].Hostname
+	connConfig.Database = pf.Entries[0].Database
+	connConfig.User = pf.Entries[0].Username
+	connConfig.Password = pf.Entries[0].Password
+
+	poolConf, err := pgxpool.ParseConfig("")
+	if err != nil {
+		return nil, err
+	}
+
+	poolConf.ConnConfig = connConfig
+	poolConf.MaxConns = cfg.pgPoolMaxConns
+
+	return poolConf, nil
 }
 
 func initENVs() error {
@@ -438,6 +456,12 @@ func initENVs() error {
 	envs.pgPassFile, ok = os.LookupEnv("PGPASSFILE")
 	if !ok {
 		return errors.New("set 'PGPASSFILE'")
+	}
+
+	// PGPOOL_MAXCONNS
+	envs.pgPoolMaxConns, ok = os.LookupEnv("PGPOOL_MAXCONNS")
+	if !ok {
+		return errors.New("set 'PGPOOL_MAXCONNS'")
 	}
 
 	// UUIDS_FILE

@@ -34,7 +34,7 @@ func (u *UseCase) Create(ctx context.Context, req *http.Request,
 // Get ...
 func (u *UseCase) Get(ctx *gin.Context, req *http.Request,
 	userID uuidgen.UUID) ([]delivery.Chat, error) {
-	chats, err := u.dataStore.GetChats(ctx, userID)
+	chats, err := u.dataStore.GetChatsByUserID(ctx, userID)
 	if err != nil {
 		return nil, contexts.ErrHandlerUseCase(
 			contexts.Chats, contexts.Get, req, err)

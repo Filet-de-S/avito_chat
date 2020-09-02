@@ -39,7 +39,7 @@ func (u *UseCase) Send(ctx context.Context, req *http.Request,
 // Get ...
 func (u *UseCase) Get(ctx context.Context, req *http.Request,
 	chatID uuidgen.UUID) ([]delivery.MSG, error) {
-	msgs, err := u.dataStore.GetMSGs(ctx, chatID)
+	msgs, err := u.dataStore.GetMSGsByChatID(ctx, chatID)
 	if err != nil {
 		return nil, contexts.ErrHandlerUseCase(
 			contexts.Messages, contexts.Get, req, err)

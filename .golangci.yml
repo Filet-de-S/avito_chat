@@ -15,9 +15,9 @@ run:
     - "^(\\w+\\/)+init.go$"
     - "^(\\w+\\/)+usecase.go$"
     - "^(\\w+\\/)+handler.go$"
-    - "^(\\w+\\/)+methods.go$"
     - "internal/api/service/server/server.go"
     - "internal/api/service/router/router.go"
+    - "internal/api/service/service.go"
 
 output:
   # colored-line-number|line-number|json|tab|checkstyle|code-climate, default is "colored-line-number"
@@ -32,22 +32,9 @@ output:
 issues:
 #  exclude-use-default: false
   exclude-rules:
-    - path: internal/api/service/service.go
-      linters:
-        - goerr113
-        - noctx
-        - gomnd
-        - gochecknoglobals
-        - lll
-        - nlreturn
-        - wsl
-        - gocognit
-        - funlen
     - path: internal/api/db/psql/psql.go
       linters:
-        - nlreturn
         - goerr113
-        - wsl
     - path: internal/api/contexts/errorhandler.go
       linters:
         - errcheck

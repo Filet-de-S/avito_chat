@@ -10,6 +10,7 @@ import (
 
 func (e *engine) send(ctx *gin.Context) {
 	msg := delivery.NewMSG{}
+
 	err := ctx.ShouldBindJSON(&msg)
 	if err != nil {
 		resp := contexts.ErrorHandler(
@@ -19,6 +20,7 @@ func (e *engine) send(ctx *gin.Context) {
 			contexts.ParseErr(err),
 		)
 		ctx.JSON(resp.Errors[0].Status, resp)
+
 		return
 	}
 
@@ -31,6 +33,7 @@ func (e *engine) send(ctx *gin.Context) {
 			[]error{err},
 		)
 		ctx.JSON(resp.Errors[0].Status, resp)
+
 		return
 	}
 
@@ -39,6 +42,7 @@ func (e *engine) send(ctx *gin.Context) {
 
 func (e *engine) get(ctx *gin.Context) {
 	msg := delivery.GetMSG{}
+
 	err := ctx.ShouldBindJSON(&msg)
 	if err != nil {
 		resp := contexts.ErrorHandler(
@@ -48,6 +52,7 @@ func (e *engine) get(ctx *gin.Context) {
 			contexts.ParseErr(err),
 		)
 		ctx.JSON(resp.Errors[0].Status, resp)
+
 		return
 	}
 
@@ -60,11 +65,13 @@ func (e *engine) get(ctx *gin.Context) {
 			[]error{err},
 		)
 		ctx.JSON(resp.Errors[0].Status, resp)
+
 		return
 	}
 
 	if len(msgs) == 0 {
 		ctx.Status(http.StatusNoContent)
+
 		return
 	}
 

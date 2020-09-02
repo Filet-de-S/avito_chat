@@ -5,4 +5,4 @@ CREATE DATABASE msg_service
     LC_COLLATE = 'en_US.utf8'
     LC_CTYPE = 'en_US.utf8'
     TABLESPACE = pg_default
-    CONNECTION LIMIT = 2;
+    CONNECTION LIMIT = 10;
