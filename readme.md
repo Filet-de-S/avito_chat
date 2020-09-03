@@ -20,6 +20,19 @@ ___
 
         Тестовый скрипт использует `postgresql-client, curl, newman, newman-reporter-html`, позаботьтесь об их установке
 
+* Профилируем: перед запуском сервиса – `export PPROF=ON`
+    
+    URI: `/admin/pprof`
+    
+    Header: `Authorization: <secrets/.pprof>`
+
+    Нагружаем и снимаем показатели с некоторыми готовыми опциями через скрипт:
+    
+        cd test/ApacheBench; ./ab+pprof.sh
+    
+    Если ругается, регулируйте время запроса в `pprof.sh` и таймаут сервиса в `deployments/service.env`
+    
+    
 
 ___
 #### *NB: для удобства быстрой инициализации проекта оставил* 
@@ -28,6 +41,8 @@ ___
      `.pgpass` – PGPASSFILE
         
      `.pgpassf` – POSTGRES_PASSWORD_FILE
+     
+     `.pprof` – пароль для входа в /admin/pprof
         
      `.pwmng` – `user:pw` для входа в сервис-менеджер паролей
         

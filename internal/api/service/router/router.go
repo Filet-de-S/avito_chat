@@ -12,7 +12,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 )
 
@@ -33,14 +35,23 @@ type responseBodyWriter struct {
 	body *bytes.Buffer
 }
 
+var pprofPW string
+
 // New ...
-func New(useCases *UseCases) (*Engine, error) {
+func New(useCases *UseCases, pprfpw string) (*Engine, error) {
 	router := Engine{
 		gin: gin.Default(),
 	}
 
 	if gin.Mode() == "debug" {
 		router.gin.Use(logger())
+	}
+
+	if os.Getenv("PPROF") == "ON" {
+		pprofPW = pprfpw
+		pprof.Register(router.gin)
+		adminGroup := router.gin.Group("/admin", pprofunc)
+		pprof.RouteRegister(adminGroup, "pprof")
 	}
 
 	router.gin.GET("/status", router.status)
@@ -64,6 +75,14 @@ func New(useCases *UseCases) (*Engine, error) {
 // Handler ...
 func (e *Engine) Handler() http.Handler {
 	return e.gin
+}
+
+func pprofunc(ctx *gin.Context) {
+	if ctx.Request.Header.Get("Authorization") != pprofPW {
+		ctx.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+	ctx.Next()
 }
 
 func (e *Engine) status(ctx *gin.Context) {

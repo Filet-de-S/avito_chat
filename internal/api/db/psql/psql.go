@@ -10,6 +10,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/jackc/pgconn"
@@ -56,8 +57,8 @@ func (s *Store) GetMSGsByChatID(ctx context.Context, chatID uuidgen.UUID) (
 		msgs = append(msgs, m)
 	}
 
-	if res.Err() != nil {
-		return nil, handleError(getMSGs, res.Err())
+	if err := res.Err(); err != nil {
+		return nil, handleError(getMSGs, err)
 	}
 
 	return msgs, nil
@@ -85,8 +86,8 @@ func (s *Store) GetChatsByUserID(ctx context.Context, userID uuidgen.UUID) (
 		chats = append(chats, chat)
 	}
 
-	if res.Err() != nil {
-		return nil, handleError(getChats, res.Err())
+	if err := res.Err(); err != nil {
+		return nil, handleError(getChats, err)
 	}
 
 	return chats, nil
@@ -116,6 +117,12 @@ func (s *Store) SaveChat(ctx context.Context, chat chats.Chat) error {
 	if err != nil {
 		return handleError(saveChat, err)
 	}
+
+	defer func(tx pgx.Tx) {
+		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			log.Println("ERR ROLLING FOR SAVING CHAT", chat, "\nWITH ERR:", err)
+		}
+	}(tx)
 
 	_, err = tx.Exec(ctx, query, args...)
 	if err != nil {

@@ -19,6 +19,7 @@ services:
     environment:
       PW_MNG_HOST: "pwmanager"
       PW_MNG_PORT: "1337"
+      PPROF: $PPROF
       TZ: $TZ
     secrets:
       - source: pwmng
@@ -36,7 +37,7 @@ services:
       - files.env
     environment:
       MAIN_SERVICE: "chat-api:8080"
-      FILES: $PGPASSFILE:$UUIDS_FILE
+      FILES: $PGPASSFILE:$UUIDS_FILE:$PPROF_FILE
       TZ: $TZ
     secrets:
       - source: pgpass
@@ -45,6 +46,8 @@ services:
         target: $UUIDS_FILE
       - source: pwmng
         target: $PW_MNG_FILE
+      - source: pprof
+        target: $PPROF_FILE
 
   pg:
     image: postgres:12.4-alpine
@@ -69,6 +72,8 @@ secrets:
     file: ../secrets/$UUIDS_FILE
   pwmng:
     file: ../secrets/$PW_MNG_FILE
+  pprof:
+    file: ../secrets/$PPROF_FILE
 
 volumes:
   data:

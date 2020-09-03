@@ -46,6 +46,7 @@ type config struct {
 	uuidChat       string
 	uuidMsg        string
 	pgPoolMaxConns int32
+	pprofPW        string
 }
 
 type _envs struct {
@@ -58,6 +59,7 @@ type _envs struct {
 	pgPassFile     string
 	pgPoolMaxConns string
 	uuidsFile      string
+	pprofFile      string
 }
 
 type memory struct {
@@ -91,7 +93,7 @@ func New() (*Service, error) {
 		return nil, fmt.Errorf("useCases: %w", err)
 	}
 
-	router, err := _router.New(useCases)
+	router, err := _router.New(useCases, cfg.pprofPW)
 	if err != nil {
 		return nil, fmt.Errorf("routing: %w", err)
 	}
@@ -188,6 +190,13 @@ func initSecretsFromPWManager() error {
 		return errors.New("can't find 'UUIDS_FILE' in secrets JSON")
 	}
 	parseUUIDsFile(val.(string))
+
+	// PPROF_FILE
+	val, ok = secrets[envs.pprofFile]
+	if !ok {
+		return errors.New("can't find 'PPROF_FILE' in secrets JSON")
+	}
+	cfg.pprofPW = val.(string)
 
 	return nil
 }
@@ -470,5 +479,10 @@ func initENVs() error {
 		return errors.New("set 'UUIDS_FILE'")
 	}
 
+	// PPROF_FILE
+	envs.pprofFile, ok = os.LookupEnv("PPROF_FILE")
+	if !ok {
+		return errors.New("set 'PPROF_FILE'")
+	}
 	return nil
 }
