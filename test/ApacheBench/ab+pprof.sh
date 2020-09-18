@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# !NB: if you change UUID for GEN USER_ID or CHAT_ID, as well as pprof pw => script will not work!
+# !NB: if you change UUID for GEN USER_ID or CHAT_ID  => script will not work!
 
 
 curl -X POST localhost:9000/users/add -d '{"username": "user7"}'
@@ -14,12 +14,14 @@ mkdir -p results/raw
 
 ab -n 5000 -c 100 -r -p sendMsg localhost:9000/messages/add > results/ab 2>&1 &
 
-./pprof.sh
+PPROF_PW=$1
+TLIM=$2
+. ./pprof.sh
 
 # waiting ab to finish
 wait $!
 
 sleep 1
-curl -H "Authorization: f00b@r" localhost:9000/admin/pprof/goroutine?debug=2 -o results/goroutines.txt
+curl -H "Authorization: $PPROF_PW" localhost:9000/admin/pprof/goroutine?debug=2 -o results/goroutines.txt
 
-echo "\nCheck 'results/' dir"
+echo "\nCheck \033[0;34m'test/ApacheBench/results'\033[0m dir"

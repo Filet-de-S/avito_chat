@@ -65,3 +65,8 @@ prod-build:
 
 lint:
 	golangci-lint run; exit $$?
+
+# don't forget to: `export PPROF=ON` before service start!
+PPROF_PW=$(shell cat secrets/.pprof)
+pprof:
+	cd test/ApacheBench; eval './ab+pprof.sh $(PPROF_PW) $(tlim)'
