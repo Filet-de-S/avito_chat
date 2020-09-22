@@ -26,9 +26,11 @@ ___
     
     Header: `Authorization: <secrets/.pprof>`
 
-    Нагружаем и снимаем показатели с некоторыми готовыми опциями через скрипт: `make pprof`
+    Нагружаем и снимаем показатели с помощью готового скрипта `ApacheBench`: `make ab [args="[ab args]"]`
     
-    * Если ругается, регулируйте время снятия показателей `make pprof tlim=[seconds]` и/или таймаут сервиса в `deployments/service.env` 
+    * Если ругается, регулируйте время снятия показателей `make pprof tlim=[seconds]` и/или таймаут сервиса в `deployments/service.env`
+    
+    или с помощью `wrk`: `make wrk [tlim=[seconds] args="[wrk args]"` 
 
 ___
 #### *NB: для удобства быстрой инициализации проекта оставил* 

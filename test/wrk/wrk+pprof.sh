@@ -13,18 +13,18 @@ curl -X POST localhost:9000/chats/add -d '{"name":"chat1","users":["0fdd1d54-736
 mkdir -p results/raw
 
 args=$args
-[ -z "$args" ] && args="-n 5000 -c 50"
+[ -z "$args" ] && args="-t4 -c200 -d10s"
 echo "\nargs are $args"
-ab $args -r -p sendMsg localhost:9000/messages/add > results/ab 2>&1 &
+wrk $args -s sendMsg.lua http://localhost:9000/messages/add > results/wrk 2>&1 &
 
 PPROF_PW=$1
 TLIM=$tlim
 . ./pprof.sh
 
-# waiting ab to finish
+# waiting wrk to finish
 wait $!
 
 sleep 1
 curl -H "Authorization: $PPROF_PW" localhost:9000/admin/pprof/goroutine?debug=2 -o results/goroutines.txt
 
-echo "\nCheck \033[0;34m'test/ApacheBench/results'\033[0m dir"
+echo "\nCheck \033[0;34m'test/wrk/results'\033[0m dir"

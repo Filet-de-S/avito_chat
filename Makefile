@@ -68,5 +68,9 @@ lint:
 
 # don't forget to: `export PPROF=ON` before service start!
 PPROF_PW=$(shell cat secrets/.pprof)
-pprof:
-	cd test/ApacheBench; eval './ab+pprof.sh $(PPROF_PW) $(tlim)'
+ab:
+	cd test/ApacheBench; eval './ab+pprof.sh $(PPROF_PW) $(tlim) $(args)'
+
+# don't forget to: `export PPROF=ON` before service start!
+wrk:
+	cd test/wrk; eval './wrk+pprof.sh $(PPROF_PW) $(tlim) $(args)'
